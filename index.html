@@ -103,6 +103,58 @@ $('#refreshRecipes').onclick=renderRecipes;
 
 let aiFoodName = '';
 
+$('#nutritionSearch').onsubmit = async e => {
+  e.preventDefault();
+
+  const query = $('#nutritionQuery').value.trim();
+  const results = $('#nutritionResults');
+
+  if (!query) return;
+
+  results.textContent = 'Searching USDA FoodData Central...';
+
+  try {
+    const response = await fetch('/api/nutrition', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || 'Nutrition search failed.');
+    }
+
+    if (!data.foods || data.foods.length === 0) {
+      results.textContent = 'No matching foods found. Try another food name.';
+      return;
+    }
+
+    const show = value =>
+      value == null ? 'Not available' : value;
+
+    results.innerHTML = data.foods.map(food => `
+      <article class="recipe">
+        <h4>${esc(food.name)}</h4>
+        <p><b>Nutrition per 100 g</b></p>
+        <p>
+          Calories: ${show(food.calories)} kcal<br>
+          Protein: ${show(food.protein)} g<br>
+          Carbs: ${show(food.carbs)} g<br>
+          Fat: ${show(food.fat)} g
+        </p>
+        <div class="meta">
+          Source: USDA FoodData Central · FDC ID: ${show(food.fdcId)}
+        </div>
+      </article>
+    `).join('');
+
+  } catch (error) {
+    results.textContent = 'Error: ' + error.message;
+  }
+};
+
 $('#scanFile').onchange = async e => {
   const file = e.target.files[0];
   if (!file) return;
