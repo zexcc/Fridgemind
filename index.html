@@ -130,26 +130,67 @@ $('#scanFile').onchange = async e => {
       throw new Error(data.error || 'AI analysis failed.');
     }
 
-    let result = data.analysis;
-    let output = result?.response || result;
+    
+let result = data.analysis;
+let output = result?.response || result;
 
-    if (typeof output === 'string') {
-      try {
-        output = JSON.parse(output);
-      } catch (_) {}
-    }
+if (typeof output === 'string') {
+  try {
+    output = JSON.parse(output);
+  } catch (_) {}
+}
 
-    if (output && typeof output === 'object') {
-      aiFoodName = output.foods?.[0]?.name || '';
-      $('#scanStatus').textContent =
-        'AI FOOD ANALYSIS\n\n' + JSON.stringify(output, null, 2);
-    } else {
-      aiFoodName = '';
-      $('#scanStatus').textContent =
-        'AI FOOD ANALYSIS\n\n' + String(output);
-    }
+if (output && typeof output === 'object' && Array.isArray(output.foods)) {
+  const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[c]);
 
-    $('#scanAdd').disabled = false;
+  aiFoodName = output.foods[0]?.name || '';
+
+  $('#scanStatus').innerHTML = `
+    <div style="text-align:left">
+      <h3>🥗 Food Intelligence Report</h3>
+
+      ${output.foods.length ? output.foods.map(food => `
+        <div style="background:#f1f7f2;padding:14px;border-radius:12px;margin:12px 0;color:#173b2b">
+          <h3>${escapeHTML(food.name)}</h3>
+          <p><b>Category:</b> ${escapeHTML(food.category)}</p>
+          <p><b>Visual condition:</b> ${escapeHTML(food.visual_condition)}</p>
+          <p><b>Visible defects:</b> ${escapeHTML((food.visible_defects || []).join(', ') || 'None identified')}</p>
+
+          <hr>
+          <b>Estimated nutrition per 100g</b>
+          <p>Calories: ${escapeHTML(food.estimated_calories_per_100g ?? 'Unknown')} kcal</p>
+          <p>Protein: ${escapeHTML(food.estimated_protein_g_per_100g ?? 'Unknown')} g</p>
+          <p>Carbs: ${escapeHTML(food.estimated_carbs_g_per_100g ?? 'Unknown')} g</p>
+          <p>Fat: ${escapeHTML(food.estimated_fat_g_per_100g ?? 'Unknown')} g</p>
+
+          <hr>
+          <p><b>Storage:</b> ${escapeHTML(food.storage_advice)}</p>
+          <p><b>Estimated shelf life:</b> ${escapeHTML(food.estimated_shelf_life)}</p>
+          <p><b>Confidence:</b> ${escapeHTML(food.confidence)}</p>
+        </div>
+      `).join('') : '<p>No recognizable food found.</p>'}
+
+      <p><b>Notes:</b> ${escapeHTML((output.overall_notes || []).join(' • ') || 'No additional notes')}</p>
+
+      <p style="font-size:12px;color:#9b5b16">
+        ⚠️ ${escapeHTML(output.safety_warning || 'A photo cannot establish food safety.')}
+      </p>
+    </div>
+  `;
+} else {
+  aiFoodName = '';
+  $('#scanStatus').textContent =
+    'Could not read structured AI results. Please scan again.';
+}
+
+$('#scanAdd').disabled = false;
+
 
   } catch (error) {
     aiFoodName = '';
