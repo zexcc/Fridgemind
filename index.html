@@ -51,7 +51,16 @@
 <div class="modal" id="foodModal"><div class="dialog"><h2 id="modalTitle">Add food</h2><form id="foodForm"><div class="formgrid">
 <label>Food name *<input name="name" required placeholder="e.g. Spinach"></label><label>Category<select name="category"><option>Vegetables</option><option>Fruit</option><option>Dairy</option><option>Meat & seafood</option><option>Grains</option><option>Prepared food</option><option>Other</option></select></label>
 <label>Quantity / portion<input name="quantity" placeholder="e.g. 250 g"></label><label>Storage<select name="storage"><option>Refrigerator</option><option>Freezer</option><option>Pantry</option></select></label>
-<label>Added date<input name="added" type="date"></label><label>Use-by / best-before date *<input name="expiry" type="date" required></label>
+<label>Added date<input name="added" type="date"></label><label>
+  Use-by / best-before date *
+  <input name="expiry" type="date" required>
+  <small id="expirySuggestion" class="muted">
+    Choose a date or get a storage-based suggestion.
+  </small>
+  <button type="button" class="btn light" id="suggestExpiry">
+    ✨ Suggest expiry date
+  </button>
+</label>
 <label>Condition<select name="condition"><option value="normal">Looks normal</option><option value="check">Needs human check</option><option value="mold">Visible mold / spoilage</option></select></label><label>Nutrition basis<select name="basis"><option>Per item / portion</option><option>Per 100 g</option></select></label>
 <label>Calories (kcal)<input name="kcal" type="number" min="0" value="0"></label><label>Protein (g)<input name="protein" type="number" min="0" step=".1" value="0"></label><label>Carbs (g)<input name="carbs" type="number" min="0" step=".1" value="0"></label><label>Fat (g)<input name="fat" type="number" min="0" step=".1" value="0"></label>
 <label class="wide">Food photo<input id="foodPhoto" type="file" accept="image/*" capture="environment"><img id="foodPreview" class="preview" alt="Food preview"></label>
