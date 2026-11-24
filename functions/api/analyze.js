@@ -41,25 +41,40 @@ export async function onRequestPost({ request, env }) {
     const result = await env.AI.run(
       "@cf/meta/llama-3.2-11b-vision-instruct",
       {
-        prompt: `Analyze this food image for FridgeMind.
+        
+prompt: `Analyze the food in this image for FridgeMind.
 
-Identify:
-1. Food items visible.
-2. Estimated quantity, only if reasonably visible.
-3. Visible mold, discoloration, bruising or damage.
-4. Whether freshness is uncertain.
-5. Limitations of the image.
+Return ONLY valid JSON. Do not use markdown or explanations.
 
-Return a concise JSON object with:
-foods (array of objects with name and estimated_quantity),
-visible_issues (array),
-freshness_observation,
-confidence (low, medium or high),
-limitations.
+Use this exact structure:
+{
+  "foods": [
+    {
+      "name": "Food name",
+      "category": "Fruit, vegetable, meat, dairy, grain, or other",
+      "visual_condition": "Fresh-looking, aging, or visibly spoiled",
+      "visible_defects": [],
+      "estimated_calories_per_100g": null,
+      "estimated_protein_g_per_100g": null,
+      "estimated_carbs_g_per_100g": null,
+      "estimated_fat_g_per_100g": null,
+      "storage_advice": "Storage recommendation",
+      "estimated_shelf_life": "General estimate",
+      "confidence": "High, medium, or low"
+    }
+  ],
+  "overall_notes": [],
+  "safety_warning": "A photo cannot establish food safety or detect invisible pathogens or toxins."
+}
 
-Do not claim food is safe to eat.
-Never infer invisible bacteria, toxins or pathogens.
-Do not invent expiry dates or nutritional values.`,
+Rules:
+- Identify only foods you can reasonably recognize.
+- Use null for nutrition values you cannot reliably estimate.
+- Do not invent exact expiry dates.
+- Do not claim food is safe to eat.
+- Describe only visible defects.
+- If no food is recognizable, return an empty foods array.`,
+
         image: image,
         max_tokens: 500
       }
