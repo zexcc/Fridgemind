@@ -23,7 +23,22 @@
 
 <section class="view" id="scan"><div class="two"><section class="panel"><h3>📷 Camera food scan</h3><p class="muted">Take or upload a food photo. Take or upload a food photo. FridgeMind AI identifies foods, analyzes visible condition, estimates nutrition and suggests storage guidance..</p><label class="btn" for="scanFile">Open camera / choose photo</label><input class="hide" id="scanFile" type="file" accept="image/*" capture="environment"><img id="scanPreview" class="preview" alt="Selected food photo"><div id="scanStatus" class="notice"><b>Ready to scan</b><p>Image analysis is not active in this offline prototype.</p></div><button class="btn" id="scanAdd" disabled>Add scanned item</button></section><section class="panel"><h3>What real AI will check</h3><div class="stack"><div class="notice"><b>Ingredient recognition</b><p>Suggest likely food names and categories; ask you to confirm.</p></div><div class="notice warn"><b>Visible quality signals</b><p>Flag visible mold-like growth, bruising or discoloration for human review—not a safety verdict.</p></div><div class="notice"><b>Nutrition lookup</b><p>Match confirmed foods to a verified nutrition database with portion size and source shown.</p></div><div class="notice red"><b>Safety limitation</b><p>Vision cannot reliably detect pathogens, toxins or unsafe storage history.</p></div></div></section></div></section>
 
-<section class="view" id="nutrition"><div class="grid"><section class="panel"><h3>Nutrition totals</h3><p class="muted">Calculated from your entered food values and meal log. Inventory totals are not the same as what you ate.</p><div class="cards" id="nutritionTotals"></div><div class="notice"><b>How to improve accuracy</b><p>Enter the portion you actually ate, use package nutrition labels, and record values per serving or per 100 g consistently.</p></div></section><section class="panel"><h3>Daily food log</h3><form id="mealLog" class="stack"><label>Food / meal<input name="name" required placeholder="e.g. Dal bhat and vegetables"></label><div class="two"><label>Calories (kcal)<input name="kcal" type="number" min="0" required></label><label>Protein (g)<input name="protein" type="number" min="0" step=".1" value="0"></label></div><div class="two"><label>Carbs (g)<input name="carbs" type="number" min="0" step=".1" value="0"></label><label>Fat (g)<input name="fat" type="number" min="0" step=".1" value="0"></label></div><button class="btn">Add to today's log</button></form><div id="mealEntries" class="stack" style="margin-top:12px"></div></section></div></section>
+<section class="view" id="nutrition"><div class="grid"><section class="panel"><h3>Nutrition totals</h3><p class="muted">Calculated from your entered food values and meal log. Inventory totals are not the same as what you ate.</p><div class="cards" id="nutritionTotals"></div>
+<div class="notice">
+  <b>How to improve accuracy</b>
+  <p>Enter the portion you actually ate, use package nutrition labels, and record values per serving or per 100 g consistently.</p>
+</div>
+
+<div class="notice">
+  <b>🔎 USDA Nutrition Database</b>
+  <p>Search verified food records to find calories and nutrients per 100 g.</p>
+  <form id="nutritionSearch" class="stack">
+    <input id="nutritionQuery" type="text" placeholder="Search food, e.g. banana" required>
+    <button class="btn" type="submit">Search nutrition</button>
+  </form>
+  <div id="nutritionResults" class="stack" style="margin-top:12px"></div>
+</div>
+</section><section class="panel"><h3>Daily food log</h3><form id="mealLog" class="stack"><label>Food / meal<input name="name" required placeholder="e.g. Dal bhat and vegetables"></label><div class="two"><label>Calories (kcal)<input name="kcal" type="number" min="0" required></label><label>Protein (g)<input name="protein" type="number" min="0" step=".1" value="0"></label></div><div class="two"><label>Carbs (g)<input name="carbs" type="number" min="0" step=".1" value="0"></label><label>Fat (g)<input name="fat" type="number" min="0" step=".1" value="0"></label></div><button class="btn">Add to today's log</button></form><div id="mealEntries" class="stack" style="margin-top:12px"></div></section></div></section>
 
 <section class="view" id="meals"><section class="panel"><div class="panel-head"><h3>Meal ideas from your inventory</h3><button class="btn light" id="refreshRecipes">Refresh ideas</button></div><p class="muted">Simple ingredient-based suggestions. Confirm ingredients, allergies and food condition before cooking.</p><div id="recipes" class="two"></div></section></section>
 
