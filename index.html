@@ -74,8 +74,92 @@ function showView(v){document.querySelectorAll('.nav button').forEach(b=>b.class
 $('#mealLog').onsubmit=e=>{e.preventDefault();let d=Object.fromEntries(new FormData(e.target).entries());['kcal','protein','carbs','fat'].forEach(k=>d[k]=Number(d[k]||0));state.logs.unshift({...d,id:id(),date:today()});persist();e.target.reset()}
 function renderRecipes(){let available=state.foods.filter(x=>status(x)[0]==='good').map(x=>x.name);let recipes=[['Quick vegetable bowl',['Vegetables','Grains'],'Combine available vegetables with a grain and a protein source.'],['Simple protein plate',['Dairy','Meat & seafood'],'Pair a suitable protein with vegetables and whole grains.'],['Fruit & yogurt snack',['Fruit','Dairy'],'Combine fresh fruit with yogurt or another protein-rich option.'],['Pantry meal',['Grains','Other'],'Build a simple meal around grains, beans or lentils and vegetables.']];$('#recipes').innerHTML=recipes.map(r=>{let matched=available.filter(n=>r[1].some(c=>state.foods.find(f=>f.name===n)?.category===c));return `<article class="recipe"><h4>${r[0]}</h4><p>${r[2]}</p><div class="meta">${matched.length?'Possible items: '+matched.map(esc).join(', '):'Add more inventory to personalize this idea'}</div></article>`}).join('')}
 $('#refreshRecipes').onclick=renderRecipes;
-$('#scanFile').onchange=e=>readPhoto(e.target.files[0],v=>{foodPhoto=v;$('#scanPreview').src=v;$('#scanPreview').style.display='block';$('#scanStatus').innerHTML='<b>Photo loaded</b><p>Preview ready. No image recognition model is connected; confirm food name yourself before adding it.</p>';$('#scanAdd').disabled=false});
-$('#scanAdd').onclick=()=>{openFood();foodPhoto=$('#scanPreview').src;$('#foodPreview').src=foodPhoto;$('#foodPreview').style.display='block';showView('inventory')};
+
+let aiFoodName = '';
+
+$('#scanFile').onchange = async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    alert('Please choose a JPG, PNG or WebP image.');
+    return;
+  }
+
+  if (file.size > 2000000) {
+    alert('Please choose an image smaller than 2 MB.');
+    return;
+  }
+
+  $('#scanAdd').disabled = true;
+  $('#scanStatus').textContent = 'Uploading image for AI analysis...';
+  
+  try {
+    const image = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error('Could not read image.'));
+      reader.readAsDataURL(file);
+    });
+
+    foodPhoto = image;
+    $('#scanPreview').src = image;
+    $('#scanPreview').style.display = 'block';
+    $('#scanStatus').textContent = 'AI is examining your food...';
+
+    const response = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || 'AI analysis failed.');
+    }
+
+    let result = data.analysis;
+    let output = result?.response || result;
+
+    if (typeof output === 'string') {
+      try {
+        output = JSON.parse(output);
+      } catch (_) {}
+    }
+
+    if (output && typeof output === 'object') {
+      aiFoodName = output.foods?.[0]?.name || '';
+      $('#scanStatus').textContent =
+        'AI FOOD ANALYSIS\n\n' + JSON.stringify(output, null, 2);
+    } else {
+      aiFoodName = '';
+      $('#scanStatus').textContent =
+        'AI FOOD ANALYSIS\n\n' + String(output);
+    }
+
+    $('#scanAdd').disabled = false;
+
+  } catch (error) {
+    aiFoodName = '';
+    $('#scanStatus').textContent = 'Analysis error: ' + error.message;
+  }
+};
+
+
+$('#scanAdd').onclick = () => {
+  openFood();
+  foodPhoto = $('#scanPreview').src;
+  $('#foodPreview').src = foodPhoto;
+  $('#foodPreview').style.display = 'block';
+
+  if (aiFoodName) {
+    $('#foodForm').elements.name.value = aiFoodName;
+  }
+
+  showView('inventory');
+};
+
 $('#demoTemp').onclick=()=>{ $('#tempValue').textContent='Demo only';$('#tempTime').textContent='No physical sensor connected · sample is not a measurement';alert('This is a UI preview only. No sensor reading was received.');};
 function exportData(){let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='fridgemind-backup.json';a.click();URL.revokeObjectURL(url)}
 $('#exportBtn').onclick=$('#export2').onclick=exportData;
