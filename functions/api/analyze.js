@@ -11,8 +11,7 @@ export async function onRequestPost({ request, env }) {
     const body = await request.json();
     const image = body.image;
 
-    if (typeof image !== "string" ||
-        !image.startsWith("data:image/")) {
+    if (typeof image !== "string") {
       return Response.json(
         { error: "Please upload a valid food image." },
         { status: 400 }
@@ -39,8 +38,6 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
-    const bytes = Array.from(binary, c => c.charCodeAt(0));
-
     const result = await env.AI.run(
       "@cf/meta/llama-3.2-11b-vision-instruct",
       {
@@ -51,7 +48,7 @@ Identify:
 2. Estimated quantity, only if reasonably visible.
 3. Visible mold, discoloration, bruising or damage.
 4. Whether freshness is uncertain.
-5. Any limitations of this image.
+5. Limitations of the image.
 
 Return a concise JSON object with:
 foods (array of objects with name and estimated_quantity),
@@ -63,7 +60,7 @@ limitations.
 Do not claim food is safe to eat.
 Never infer invisible bacteria, toxins or pathogens.
 Do not invent expiry dates or nutritional values.`,
-        image: bytes,
+        image: image,
         max_tokens: 500
       }
     );
@@ -74,8 +71,13 @@ Do not invent expiry dates or nutritional values.`,
     });
 
   } catch (error) {
+    console.error("FridgeMind AI error:", error);
+
     return Response.json(
-      { error: "Food analysis failed. Please try again." },
+      {
+        success: false,
+        error: error.message || "Unknown Cloudflare AI error."
+      },
       { status: 500 }
     );
   }
