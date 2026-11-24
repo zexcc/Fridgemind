@@ -134,11 +134,20 @@ $('#scanFile').onchange = async e => {
 let result = data.analysis;
 let output = result?.response || result;
 
+
 if (typeof output === 'string') {
   try {
-    output = JSON.parse(output);
-  } catch (_) {}
+    const start = output.indexOf('{');
+    const end = output.lastIndexOf('}');
+
+    if (start !== -1 && end > start) {
+      output = JSON.parse(output.slice(start, end + 1));
+    }
+  } catch (_) {
+    output = null;
+  }
 }
+
 
 if (output && typeof output === 'object' && Array.isArray(output.foods)) {
   const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({
