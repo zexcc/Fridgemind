@@ -44,21 +44,32 @@ export async function onRequestPost({ request, env }) {
     }
 
     const foods = (data.foods || []).map(food => {
-      const getNutrient = number => {
-        const item = (food.foodNutrients || []).find(
-          n => String(n.nutrientNumber) === String(number)
-        );
-        return item ? item.value : null;
-      };
+      const getNutrient = (numbers, names) => {
+  const nutrients = food.foodNutrients || [];
+
+  let item = nutrients.find(n =>
+    numbers.includes(String(n.nutrientNumber)) ||
+    numbers.includes(String(n.nutrientId))
+  );
+
+  if (!item) {
+    item = nutrients.find(n => {
+      const name = String(n.nutrientName || '').toLowerCase();
+      return names.some(term => name.includes(term));
+    });
+  }
+
+  return item && item.value != null ? item.value : null;
+};
 
       return {
         fdcId: food.fdcId,
         name: food.description,
         category: food.foodCategory || "",
-        calories: getNutrient("208"),
-        protein: getNutrient("203"),
-        carbs: getNutrient("205"),
-        fat: getNutrient("204"),
+        calories: getNutrient(["208", "1008", "2047", "2048"], ["energy"]),
+        protein: getNutrient(["203", "1003"], ["protein"]),
+        carbs: getNutrient(["205", "1005"], ["carbohydrate"]),
+        fat: getNutrient(["204", "1004"], ["total lipid", "total fat"]),
         basis: "per 100 g",
         source: "USDA FoodData Central"
       };
