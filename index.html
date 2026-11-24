@@ -67,7 +67,18 @@ function closeFood(){$('#foodModal').classList.remove('show')}
 window.editFood=id=>openFood(state.foods.find(x=>x.id===id));window.removeFood=id=>{if(confirm('Delete this inventory item?')){state.foods=state.foods.filter(x=>x.id!==id);persist()}};window.removeLog=id=>{state.logs=state.logs.filter(x=>x.id!==id);persist()};
 $('#addBtn').onclick=$('#addInventory').onclick=()=>openFood();$('#cancelFood').onclick=closeFood;$('#search').oninput=render;$('#filter').onchange=render;
 $('#foodPhoto').onchange=e=>readPhoto(e.target.files[0],v=>{foodPhoto=v;$('#foodPreview').src=v;$('#foodPreview').style.display='block'});
-function readPhoto(file,cb){if(!file)return;if(file.size>2_000_000){alert('Please choose an image smaller than 2 MB for local storage.');return}let r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(file)}
+function readPhoto(file, cb) {
+  if (!file) return;
+
+  if (file.size > 10 * 1024 * 1024) {
+    alert('Please choose an image smaller than 10 MB.');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => cb(reader.result);
+  reader.readAsDataURL(file);
+}
 $('#foodForm').onsubmit=e=>{e.preventDefault();let d=Object.fromEntries(new FormData(e.target).entries());let item={...d,id:editing||id(),photo:foodPhoto};['kcal','protein','carbs','fat'].forEach(k=>item[k]=Number(item[k]||0));state.foods=editing?state.foods.map(x=>x.id===editing?item:x):[item,...state.foods];persist();closeFood()};
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showView(b.dataset.view));document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>showView(b.dataset.go));
 function showView(v){document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===v))}
@@ -89,7 +100,6 @@ $('#scanFile').onchange = async e => {
   if (file.size > 10 * 1024 * 1024) {
   alert('Please choose an image smaller than 10 MB.');
   return;
-}
   }
 
   $('#scanAdd').disabled = true;
