@@ -1,0 +1,9 @@
+{
+  "name": "FridgeMind \u2014 Food, Freshness & Health",
+  "short_name": "FridgeMind",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f3f7f3",
+  "theme_color": "#123b2b",
+  "description": "Food inventory, freshness tracking, nutrition and meal planning."
+}
