@@ -34,7 +34,7 @@ export async function onRequestPost({ request, env }) {
 
     if (binary.length > 10 * 1024 * 1024) {
       return Response.json(
-        { error: "Image must be under 4 MB." },
+        { error: "Image must be under 10 MB." },
         { status: 413 }
       );
     }
