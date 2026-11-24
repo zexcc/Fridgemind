@@ -103,6 +103,75 @@ function readPhoto(file, cb) {
   reader.onload = () => cb(reader.result);
   reader.readAsDataURL(file);
 }
+
+$('#suggestExpiry').onclick = () => {
+  const form = $('#foodForm');
+
+  const category = form.elements.category
+    .selectedOptions[0].textContent.toLowerCase();
+
+  const storage = form.elements.storage
+    .selectedOptions[0].textContent.toLowerCase();
+
+  const added = form.elements.added.value || today();
+
+  let days = null;
+
+  if (storage.includes('freezer')) {
+    days = 30;
+  } else if (
+    category.includes('meat') ||
+    category.includes('seafood') ||
+    category.includes('fish')
+  ) {
+    if (storage.includes('refrigerator') || storage.includes('fridge')) {
+      days = 1;
+    }
+  } else if (category.includes('dairy')) {
+    if (storage.includes('refrigerator') || storage.includes('fridge')) {
+      days = 3;
+    }
+  } else if (
+    category.includes('vegetable') ||
+    category.includes('fruit')
+  ) {
+    if (storage.includes('refrigerator') || storage.includes('fridge')) {
+      days = 5;
+    } else if (storage.includes('pantry') || storage.includes('room')) {
+      days = 2;
+    }
+  } else if (
+    category.includes('prepared') ||
+    category.includes('cooked')
+  ) {
+    if (storage.includes('refrigerator') || storage.includes('fridge')) {
+      days = 3;
+    }
+  } else if (category.includes('grain')) {
+    days = 30;
+  }
+
+  if (days === null) {
+    $('#expirySuggestion').textContent =
+      'No estimate available for this food and storage combination. Check the package instructions.';
+    return;
+  }
+
+  const date = new Date(added + 'T12:00:00');
+  date.setDate(date.getDate() + days);
+
+  const suggested = [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0')
+  ].join('-');
+
+  form.elements.expiry.value = suggested;
+
+  $('#expirySuggestion').textContent =
+    `Approximate planning suggestion: ${days} days after the added date. Check the package date and storage instructions.`;
+};
+
 $('#foodForm').onsubmit=e=>{e.preventDefault();let d=Object.fromEntries(new FormData(e.target).entries());let item={...d,id:editing||id(),photo:foodPhoto};['kcal','protein','carbs','fat'].forEach(k=>item[k]=Number(item[k]||0));state.foods=editing?state.foods.map(x=>x.id===editing?item:x):[item,...state.foods];persist();closeFood()};
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showView(b.dataset.view));document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>showView(b.dataset.go));
 function showView(v){document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===v))}
