@@ -134,21 +134,43 @@ $('#nutritionSearch').onsubmit = async e => {
     const show = value =>
       value == null ? 'Not available' : value;
 
-    results.innerHTML = data.foods.map(food => `
-      <article class="recipe">
-        <h4>${esc(food.name)}</h4>
-        <p><b>Nutrition per 100 g</b></p>
-        <p>
-          Calories: ${show(food.calories)} kcal<br>
-          Protein: ${show(food.protein)} g<br>
-          Carbs: ${show(food.carbs)} g<br>
-          Fat: ${show(food.fat)} g
-        </p>
-        <div class="meta">
-          Source: USDA FoodData Central · FDC ID: ${show(food.fdcId)}
-        </div>
-      </article>
-    `).join('');
+    results.innerHTML = data.foods.map((food, index) => `
+  <article class="recipe">
+    <h4>${esc(food.name)}</h4>
+    <p><b>Nutrition per 100 g</b></p>
+    <p>
+      Calories: ${food.calories ?? 'Not available'} kcal<br>
+      Protein: ${food.protein ?? 'Not available'} g<br>
+      Carbs: ${food.carbs ?? 'Not available'} g<br>
+      Fat: ${food.fat ?? 'Not available'} g
+    </p>
+    <div class="meta">
+      Source: USDA FoodData Central · FDC ID: ${food.fdcId}
+    </div>
+    <button class="btn useNutrition" type="button" data-index="${index}">
+      Use this nutrition
+    </button>
+  </article>
+`).join('');
+
+results.querySelectorAll('.useNutrition').forEach(button => {
+  button.onclick = () => {
+    const food = data.foods[Number(button.dataset.index)];
+
+    openFood();
+
+    const form = $('#foodForm');
+
+    form.elements.name.value = food.name;
+    form.elements.basis.value = 'Per 100 g';
+    form.elements.kcal.value = food.calories ?? 0;
+    form.elements.protein.value = food.protein ?? 0;
+    form.elements.carbs.value = food.carbs ?? 0;
+    form.elements.fat.value = food.fat ?? 0;
+
+    showView('inventory');
+  };
+});
 
   } catch (error) {
     results.textContent = 'Error: ' + error.message;
