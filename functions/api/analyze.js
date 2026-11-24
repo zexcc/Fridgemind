@@ -32,7 +32,7 @@ export async function onRequestPost({ request, env }) {
 
     const binary = atob(match[2]);
 
-    if (binary.length > 4 * 1024 * 1024) {
+    if (binary.length > 10 * 1024 * 1024) {
       return Response.json(
         { error: "Image must be under 4 MB." },
         { status: 413 }
